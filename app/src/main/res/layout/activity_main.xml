@@ -9,6 +9,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="动画" />
+        android:text="别碰我" />
 </com.acode.emoji.AcodeEmojiView>
 

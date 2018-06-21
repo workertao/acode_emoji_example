@@ -13,13 +13,17 @@ import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -30,19 +34,26 @@ import java.util.Random;
  */
 public class AcodeEmojiView extends RelativeLayout {
     private Context context;
-    private Paint paint;
-    private float currentValue = 0;     // 用于纪录当前的位置,取值范围[0,1]映射Path的整个长度
-    private float[] pos;                // 当前点的实际位置
-    private float[] tan;                // 当前点的tangent值,用于计算图片所需旋转的角度
     private int mWidth;
     private int mHeight;
+    //画笔
+    private Paint paint;
+    // 当前点的实际位置
+    private float[] pos;
+    // 当前点的tangent值,用于计算图片所需旋转的角度
+    private float[] tan;
+    //动画插值器，其实就是几种动画效果
+    private Interpolator[] interpolators = new Interpolator[4];
+    //图片
     private int[] icons = new int[]{R.mipmap.emoji1, R.mipmap.emoji2, R.mipmap.emoji3, R.mipmap.emoji4, R.mipmap.emoji5, R.mipmap.emoji6};
-    private int resId = R.layout.emoji_view;
-    private RelativeLayout rl_emoji_group;
     //起始坐标X
-    private float startX;
+    private float startX = -1;
     //起始坐标Y
-    private float startY;
+    private float startY = -1;
+    //点击次数 这个用于展示
+    private int clickCount;
+    //点击次数备份   这个用于真正的统计点击次数
+    private int clickCountBackups;
 
     public AcodeEmojiView(Context context) {
         super(context);
@@ -59,14 +70,19 @@ public class AcodeEmojiView extends RelativeLayout {
     }
 
     private void init() {
-        View view = LayoutInflater.from(context).inflate(resId, this, true);
-        rl_emoji_group = view.findViewById(R.id.rl_emoji_group);
         paint = new Paint();
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10f);
+        paint.setStrokeWidth(2f);
+        paint.setTextSize(50);
+        paint.setAntiAlias(true);
         pos = new float[2];
         tan = new float[2];
+        // 插值器
+        interpolators[0] = new AccelerateDecelerateInterpolator(); // 在动画开始与结束的地方速率改变比较慢，在中间的时候加速
+        interpolators[1] = new AccelerateInterpolator();  // 在动画开始的地方速率改变比较慢，然后开始加速
+        interpolators[2] = new DecelerateInterpolator(); // 在动画开始的地方快然后慢
+        interpolators[3] = new LinearInterpolator();  // 以常量速率改变
     }
 
     @Override
@@ -77,36 +93,70 @@ public class AcodeEmojiView extends RelativeLayout {
         mHeight = getMeasuredHeight();
     }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        Log.d("post", "startX:" + startX + "startY:" + startY);
+        if (startX == -1 || startY == -1 || clickCount == 0) {
+            return;
+        }
+        String msg = null;
+        if (clickCount > 0 && clickCount <= 10) {
+            msg = "加油~";
+        } else if (clickCount > 10 && clickCount <= 20) {
+            msg = "再点快点，就能看到我了~";
+        } else if (clickCount > 20 && clickCount <= 30) {
+            msg = "还是不够快啊~";
+        } else if (clickCount > 30 && clickCount <= 40) {
+            msg = "要快，快~";
+        } else if (clickCount > 40 && clickCount <= 50) {
+            msg = "好吧，你还算真诚~";
+        } else if (clickCount > 50 && clickCount <= 60) {
+            msg = "我决定告诉你个事情~";
+        } else if (clickCount > 60 && clickCount < 100) {
+            msg = "今晚吃鸡，7.30上线！";
+        } else {
+            msg = "总有傻子在坚持，后边其实啥也没有！";
+        }
+        float offset = 0;
+        if (msg.length() > 5) {
+            offset = (msg.length() - 5) * 20;
+        }
+        canvas.drawText(msg + clickCount, startX - offset, startY - 75, paint);
+    }
+
     /**
      * 添加emoji
      * 每次add创建5个emoji
      */
     public void addEmoji(View view) {
+        clickCount++;
+        clickCountBackups++;
         startX = view.getX() - 30;
         startY = view.getY() - 30;
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.width = 50;
-        params.height = 50;
+        params.width = 80;
+        params.height = 80;
         final ImageView iv1 = new ImageView(context);
         iv1.setLayoutParams(params);
         iv1.setImageResource(icons[new Random().nextInt(6)]);
-        rl_emoji_group.addView(iv1);
+        addView(iv1);
         final ImageView iv2 = new ImageView(context);
         iv2.setLayoutParams(params);
         iv2.setImageResource(icons[new Random().nextInt(6)]);
-        rl_emoji_group.addView(iv2);
+        addView(iv2);
         final ImageView iv3 = new ImageView(context);
         iv3.setLayoutParams(params);
         iv3.setImageResource(icons[new Random().nextInt(6)]);
-        rl_emoji_group.addView(iv3);
+        addView(iv3);
         final ImageView iv4 = new ImageView(context);
         iv4.setLayoutParams(params);
         iv4.setImageResource(icons[new Random().nextInt(6)]);
-        rl_emoji_group.addView(iv4);
+        addView(iv4);
         final ImageView iv5 = new ImageView(context);
         iv5.setLayoutParams(params);
         iv5.setImageResource(icons[new Random().nextInt(6)]);
-        rl_emoji_group.addView(iv5);
+        addView(iv5);
         // 开启动画，并且用完销毁
         AnimatorSet set = getEmojiAnimSet(iv1, iv2, iv3, iv4, iv5);
         set.start();
@@ -115,11 +165,11 @@ public class AcodeEmojiView extends RelativeLayout {
             public void onAnimationEnd(Animator animation) {
                 // TODO Auto-generated method stub
                 super.onAnimationEnd(animation);
-                rl_emoji_group.removeView(iv1);
-                rl_emoji_group.removeView(iv2);
-                rl_emoji_group.removeView(iv3);
-                rl_emoji_group.removeView(iv4);
-                rl_emoji_group.removeView(iv5);
+                removeView(iv1);
+                removeView(iv2);
+                removeView(iv3);
+                removeView(iv4);
+                removeView(iv5);
             }
         });
     }
@@ -145,7 +195,7 @@ public class AcodeEmojiView extends RelativeLayout {
         //重新声明一个动画集合
         AnimatorSet set2 = new AnimatorSet();
         set2.play(bzier).with(set);
-        set2.setDuration(3000);
+        set2.setDuration(2000);
         return set2;
     }
 
@@ -174,22 +224,30 @@ public class AcodeEmojiView extends RelativeLayout {
         path4.moveTo(startX, startY);
         path4.quadTo(randomX(), randomY(), randomX(), randomY());
         final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+        valueAnimator.setInterpolator(interpolators[new Random().nextInt(4)]);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                currentValue = (float) valueAnimator.getAnimatedValue();
-                if (currentValue == 1){
+                // 用于纪录当前的位置,取值范围[0,1]映射Path的整个长度
+                float currentValue = (float) valueAnimator.getAnimatedValue();
+                if (currentValue == 1) {
                     path.reset();
                     path1.reset();
                     path2.reset();
                     path3.reset();
                     path4.reset();
+                    clickCountBackups--;
+                    Log.d("post", "clickCount:" + clickCount + "  " + "   clickCountBackups: " + clickCountBackups);
+                    if (clickCountBackups == 0) {
+                        Log.d("post", "动画全部执行完毕");
+                        clickCount = 0;
+                    }
                 }
-                setIvXY(path, ivs[0]);
-                setIvXY(path1, ivs[1]);
-                setIvXY(path2, ivs[2]);
-                setIvXY(path3, ivs[3]);
-                setIvXY(path4, ivs[4]);
+                setIvXY(path, ivs[0], currentValue);
+                setIvXY(path1, ivs[1], currentValue);
+                setIvXY(path2, ivs[2], currentValue);
+                setIvXY(path3, ivs[3], currentValue);
+                setIvXY(path4, ivs[4], currentValue);
             }
         });
         return valueAnimator;
@@ -201,7 +259,7 @@ public class AcodeEmojiView extends RelativeLayout {
      * @param path
      * @param iv
      */
-    private void setIvXY(Path path, ImageView iv) {
+    private void setIvXY(Path path, ImageView iv, float currentValue) {
         PathMeasure measure = new PathMeasure(path, false);
         measure.getPosTan(measure.getLength() * currentValue, pos, tan);
         iv.setX(pos[0]);

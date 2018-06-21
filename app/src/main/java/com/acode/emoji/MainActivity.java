@@ -8,6 +8,7 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
     private Button btn3;
     private AcodeEmojiView view_point;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
