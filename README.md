@@ -1,4 +1,4 @@
-# 仿今日头条自定义相册 #
+# 仿今日头条IOS版新闻点赞动画 #
 ## 感谢##
 https://blog.csdn.net/z82367825/article/details/51599245
 
