@@ -5,15 +5,16 @@ https://blog.csdn.net/z82367825/article/details/51599245
 https://www.jianshu.com/p/3efa5341abcc
 ## 效果图##
 ![效果图](http://ohdryj9ow.bkt.clouddn.com/emoji.gif)
-(如果查看不了，请点击文字跳转网页查看)
+
+[http://ohdryj9ow.bkt.clouddn.com/emoji.gif](http://ohdryj9ow.bkt.clouddn.com/emoji.gif "查看不了，请点击")
 
 ## 使用方法 ##
 在XML布局中声明
 
-    <com.acode.emoji.AcodeEmojiView xmlns:android="http://schemas.android.com/apk/res/android"
+    <com.acode.emoji.AcodeEmojiView xmlns:android="http://schemas.android.com/apk/res/an****droid"
         android:id="@+id/view_point"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent">****
     
         <Button
             android:id="@+id/btn3"
