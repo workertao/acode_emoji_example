@@ -4,9 +4,7 @@ https://blog.csdn.net/z82367825/article/details/51599245
 
 https://www.jianshu.com/p/3efa5341abcc
 ## 效果图##
-![效果图](http://ohdryj9ow.bkt.clouddn.com/emoji.gif)
-
-[http://ohdryj9ow.bkt.clouddn.com/emoji.gif](http://ohdryj9ow.bkt.clouddn.com/emoji.gif "查看不了，请点击")
+[https://github.com/workertao/acode_emoji_example/raw/master/images/GIF.gif](https://github.com/workertao/acode_emoji_example/raw/master/images/GIF.gif "效果图")
 
 ## 使用方法 ##
 在XML布局中声明
